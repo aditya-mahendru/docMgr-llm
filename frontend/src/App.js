@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { Send, FileText, Search, MessageCircle } from 'lucide-react';
+import { Send, FileText, Search, MessageCircle, Database, Info } from 'lucide-react';
 
 function App() {
     const [messages, setMessages] = useState([]);
@@ -10,6 +10,8 @@ function App() {
     const [searchResults, setSearchResults] = useState([]);
     const [showSearch, setShowSearch] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
+    const [isFunctionCalling, setIsFunctionCalling] = useState(false);
+    const [availableFunctions, setAvailableFunctions] = useState([]);
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -19,6 +21,19 @@ function App() {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Load available functions on component mount
+    useEffect(() => {
+        const loadFunctions = async () => {
+            try {
+                const response = await axios.get('/api/functions');
+                setAvailableFunctions(Object.keys(response.data.functions));
+            } catch (error) {
+                console.error('Failed to load available functions:', error);
+            }
+        };
+        loadFunctions();
+    }, []);
 
     const handleSendMessage = async () => {
         if (!inputMessage.trim() || isLoading) return;
@@ -34,6 +49,7 @@ function App() {
         setInputMessage('');
         setIsLoading(true);
         setIsTyping(false);
+        setIsFunctionCalling(false);
 
         try {
             // Create a new message for the bot response
@@ -91,7 +107,17 @@ function App() {
                                     setIsTyping(false);
                                     break;
 
+                                case 'function_call':
+                                    setIsFunctionCalling(true);
+                                    setMessages(prev => prev.map(msg =>
+                                        msg.id === botMessageId
+                                            ? { ...msg, text: msg.text + '\n\n🔍 ' + data.content }
+                                            : msg
+                                    ));
+                                    break;
+
                                 case 'content':
+                                    setIsFunctionCalling(false);
                                     setMessages(prev => prev.map(msg =>
                                         msg.id === botMessageId
                                             ? { ...msg, text: msg.text + data.content }
@@ -141,6 +167,7 @@ function App() {
         } finally {
             setIsLoading(false);
             setIsTyping(false);
+            setIsFunctionCalling(false);
         }
     };
 
@@ -180,16 +207,22 @@ function App() {
                             <MessageCircle className="h-8 w-8 text-primary-600 mr-3" />
                             <h1 className="text-xl font-semibold text-gray-900">DocMgr Chatbot</h1>
                         </div>
-                        <button
-                            onClick={() => setShowSearch(!showSearch)}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${showSearch
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
-                        >
-                            <Search className="h-4 w-4 inline mr-2" />
-                            {showSearch ? 'Hide Search' : 'Show Search'}
-                        </button>
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={() => setShowSearch(!showSearch)}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${showSearch
+                                    ? 'bg-primary-600 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                            >
+                                <Search className="h-4 w-4 inline mr-2" />
+                                {showSearch ? 'Hide Search' : 'Show Search'}
+                            </button>
+                            <div className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                                <Database className="h-3 w-3 inline mr-1" />
+                                {availableFunctions.length} Functions
+                            </div>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -259,6 +292,12 @@ function App() {
                                         <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                                         <p className="text-lg">Start a conversation with your documents!</p>
                                         <p className="text-sm">Ask questions about the content you've uploaded.</p>
+                                        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                                            <Info className="h-4 w-4 inline mr-2 text-blue-600" />
+                                            <span className="text-sm text-blue-700">
+                                                I can now access all your documents, search through them, and provide detailed information!
+                                            </span>
+                                        </div>
                                     </div>
                                 ) : (
                                     messages.map((message) => (
@@ -274,7 +313,7 @@ function App() {
                                                         : 'bg-gray-100 text-gray-800'
                                                     }`}
                                             >
-                                                <p className="text-sm streaming-text">
+                                                <p className="text-sm streaming-text whitespace-pre-wrap">
                                                     {message.text}
                                                     {message.isStreaming && (
                                                         <span className="streaming-cursor inline-block w-0.5 h-4 bg-gray-600 ml-1"></span>
@@ -315,6 +354,18 @@ function App() {
                                     </div>
                                 )}
 
+                                {/* Function Calling Indicator */}
+                                {isFunctionCalling && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg">
+                                            <div className="flex items-center space-x-2">
+                                                <Database className="h-4 w-4 animate-pulse" />
+                                                <span className="text-sm">Gathering information from documents...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div ref={messagesEndRef} />
                             </div>
 
@@ -326,7 +377,7 @@ function App() {
                                         value={inputMessage}
                                         onChange={(e) => setInputMessage(e.target.value)}
                                         onKeyPress={handleKeyPress}
-                                        placeholder="Type your message..."
+                                        placeholder="Ask about your documents, search for content, or get system info..."
                                         className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                                         disabled={isLoading}
                                     />
