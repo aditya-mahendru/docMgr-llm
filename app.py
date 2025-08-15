@@ -91,7 +91,7 @@ def generate_chat_response_stream(user_message, context_chunks):
         
         # Use Groq's streaming API
         stream = client.chat.completions.create(
-            model="llama3-8b-8192",  # Fast and efficient model
+            model="openai/gpt-oss-20b",  # Fast and efficient model
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
