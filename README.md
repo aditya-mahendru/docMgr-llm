@@ -9,6 +9,13 @@ A modern, intelligent chatbot interface that allows users to interact with docum
 - **⌨️ Typing Indicators**: See when the AI is thinking and processing
 - **🔧 Function Calling**: AI can access all DocMgr APIs to gather comprehensive information
 - **🔍 Semantic Search**: Intelligent document search with relevance scoring
+- **📁 Document Management**: Browse, upload, and delete documents directly from the interface
+- **📤 File Upload**: Drag-and-drop file upload with progress tracking
+- **🗑️ Document Deletion**: Remove documents with modern confirmation dialogs
+- **📥 Document Download**: Download original files from the system
+- **👁️ Chunk Viewer**: View document chunks and embeddings in new tabs
+- **🔔 Toast Notifications**: User-friendly success/error feedback
+- **✅ Confirmation Dialogs**: Safe deletion with clear warnings
 - **📱 Modern UI**: Clean, responsive interface built with React and Tailwind CSS
 - **🔄 Interactive Chat**: Real-time chat interface with message history
 - **📊 Context Awareness**: Bot responses include source document information
@@ -153,6 +160,14 @@ curl -X POST "http://localhost:8000/api/documents/upload" \
   -F "description=AI concepts and definitions"
 ```
 
+### 3. Use the Document Management Interface
+The chatbot now includes a comprehensive document management tab:
+- **Browse Documents**: View all uploaded documents with metadata
+- **Upload Files**: Drag-and-drop file upload with progress tracking
+- **Delete Documents**: Remove documents with confirmation dialogs
+- **Download Files**: Download original documents from the system
+- **View Chunks**: Open document chunks in new browser tabs
+
 ### 3. Test the Chatbot
 ```bash
 # Test backend functionality
@@ -250,6 +265,15 @@ python test_function_calling.py
 3. **Ask questions** about your documents
 4. **Watch real-time responses** with typing indicators
 5. **Observe function calls** when AI gathers information
+
+### Document Management Testing
+1. **Switch to Documents tab**: Click the "Documents" tab
+2. **Upload a file**: Use the upload form to add a new document
+3. **Browse documents**: View the list of uploaded documents
+4. **Test actions**: Try downloading, viewing chunks, and deleting documents
+5. **Test confirmations**: Delete operations show confirmation dialogs
+6. **Check notifications**: Toast messages appear for success/error feedback
+7. **Refresh list**: Use the refresh button to update the document list
 
 ## 🚨 Troubleshooting
 
