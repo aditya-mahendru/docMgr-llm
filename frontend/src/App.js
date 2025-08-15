@@ -276,8 +276,8 @@ function App() {
 
         try {
             const response = await axios.post('/api/search', {
-                query: searchQuery,
-                n_results: 10
+                "query": searchQuery,
+                "n_results": 10,
             });
             setSearchResults(response.data.results);
         } catch (error) {
